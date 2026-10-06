@@ -62,7 +62,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "drf_spectacular",
-    # first party apps are added here in later phases
+    
+    # first party
+    "apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -108,8 +110,7 @@ DATABASES = {
     )
 }
 
-# AUTH_USER_MODEL (our own doctor user) is added in the next phase,
-# BEFORE the first database migration.
+AUTH_USER_MODEL = "accounts.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
