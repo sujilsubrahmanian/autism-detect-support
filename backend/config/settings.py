@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     
     # first party
     "apps.accounts",
+    "apps.patients",
 ]
 
 MIDDLEWARE = [
