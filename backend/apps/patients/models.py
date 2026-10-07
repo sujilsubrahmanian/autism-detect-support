@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction
 
 
@@ -53,3 +54,36 @@ class Patient(models.Model):
     def age_on(self, when: date) -> float:
         """Age in years (decimal) on a given date."""
         return round((when - self.date_of_birth).days / 365.25, 2)
+
+
+class PregnancyHistory(models.Model):
+    """Maternal history during pregnancy (clinical context; not a model input yet)."""
+
+    patient = models.OneToOneField(Patient, on_delete=models.CASCADE, related_name="pregnancy")
+    blood_sugar_mg_dl = models.FloatField(null=True, blank=True, validators=[MinValueValidator(20), MaxValueValidator(600)])
+    previous_abortions = models.PositiveSmallIntegerField(default=0, validators=[MaxValueValidator(20)])
+    bmi = models.FloatField(null=True, blank=True, validators=[MinValueValidator(10), MaxValueValidator(80)])
+    systolic_bp = models.PositiveSmallIntegerField(null=True, blank=True, validators=[MinValueValidator(50), MaxValueValidator(260)])
+    diastolic_bp = models.PositiveSmallIntegerField(null=True, blank=True, validators=[MinValueValidator(30), MaxValueValidator(160)])
+
+    def __str__(self) -> str:
+        return f"Pregnancy history for {self.patient_id}"
+
+
+class BirthMilestones(models.Model):
+    """Birth details and age (in months) at which motor milestones were reached."""
+
+    _month = [MaxValueValidator(60)]
+
+    patient = models.OneToOneField(Patient, on_delete=models.CASCADE, related_name="milestones")
+    birth_weight_kg = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0.3), MaxValueValidator(7)])
+    premature_birth = models.BooleanField(default=False)
+    lifting_head_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+    rolling_over_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+    sitting_up_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+    crawling_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+    standing_with_support_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+    standing_individually_month = models.PositiveSmallIntegerField(null=True, blank=True, validators=_month)
+
+    def __str__(self) -> str:
+        return f"Birth milestones for {self.patient_id}"
