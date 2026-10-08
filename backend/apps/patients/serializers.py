@@ -2,7 +2,7 @@ from datetime import date
 
 from rest_framework import serializers
 
-from .models import Patient
+from .models import BirthMilestones, Patient, PregnancyHistory
 
 
 class PatientSerializer(serializers.ModelSerializer):
@@ -27,3 +27,30 @@ class PatientSerializer(serializers.ModelSerializer):
         if (date.today() - value).days / 365.25 > 120:
             raise serializers.ValidationError("Date of birth is implausibly far in the past.")
         return value
+
+
+class PregnancyHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PregnancyHistory
+        exclude = ["id", "patient"]
+
+
+class BirthMilestonesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BirthMilestones
+        exclude = ["id", "patient"]
+
+
+class HistorySerializer(serializers.Serializer):
+    """Both history sections in one payload so the UI can save them with one request."""
+
+    pregnancy = PregnancyHistorySerializer(required=False)
+    milestones = BirthMilestonesSerializer(required=False)
+
+    def save(self, patient: Patient):
+        # update_or_create makes PUT idempotent: send it twice, get the same result.
+        if "pregnancy" in self.validated_data:
+            PregnancyHistory.objects.update_or_create(patient=patient, defaults=self.validated_data["pregnancy"])
+        if "milestones" in self.validated_data:
+            BirthMilestones.objects.update_or_create(patient=patient, defaults=self.validated_data["milestones"])
+        return patient
