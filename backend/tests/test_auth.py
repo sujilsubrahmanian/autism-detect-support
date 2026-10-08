@@ -58,5 +58,5 @@ class TestAuth:
         assert r.status_code == 200 and "access" in r.data
 
     def test_protected_endpoints_reject_anonymous(self, client):
-        for url in ["/api/v1/auth/me/"]:
+        for url in ["/api/v1/patients/", "/api/v1/auth/me/"]:
             assert client.get(url).status_code == 401, url
