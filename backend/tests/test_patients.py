@@ -57,3 +57,31 @@ class TestPatients:
             auth_client.post(URL, body(name=f"K{i}"), format="json")
         with django_assert_max_num_queries(4):  # count + page query (+ session/auth), never N+1
             auth_client.get(URL)
+
+
+@pytest.mark.django_db
+class TestHistory:
+    def test_put_then_get_roundtrip_and_idempotent(self, auth_client, child):
+        url = f"{URL}{child.public_id}/history/"
+        data = {
+            "pregnancy": {"blood_sugar_mg_dl": 95, "previous_abortions": 1, "bmi": 24.5, "systolic_bp": 118, "diastolic_bp": 76},
+            "milestones": {"birth_weight_kg": 3.1, "premature_birth": False, "lifting_head_month": 3, "sitting_up_month": 7},
+        }
+        assert auth_client.put(url, data, format="json").status_code == 200
+        assert auth_client.put(url, data, format="json").status_code == 200  # idempotent
+        r = auth_client.get(url)
+        assert r.data["pregnancy"]["bmi"] == 24.5
+        assert r.data["milestones"]["sitting_up_month"] == 7
+        from apps.patients.models import PregnancyHistory
+        assert PregnancyHistory.objects.filter(patient=child).count() == 1
+
+    def test_empty_history_returns_nulls(self, auth_client, child):
+        r = auth_client.get(f"{URL}{child.public_id}/history/")
+        assert r.data == {"pregnancy": None, "milestones": None}
+
+    def test_validation_errors(self, auth_client, child):
+        r = auth_client.put(f"{URL}{child.public_id}/history/", {"milestones": {"sitting_up_month": 500}}, format="json")
+        assert r.status_code == 400
+
+    def test_cannot_write_other_doctors_history(self, other_client, child):
+        assert other_client.put(f"{URL}{child.public_id}/history/", {"pregnancy": {"bmi": 22}}, format="json").status_code == 404
