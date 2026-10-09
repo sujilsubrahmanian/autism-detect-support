@@ -1,0 +1,30 @@
+{
+  "model_name": "voting-rf-gb",
+  "description": "Soft-voting ensemble of RandomForest + GradientBoosting on ABIDE phenotypic scores",
+  "sklearn_version": "1.5.2",
+  "feature_order": [
+    "AGE_AT_SCAN",
+    "SEX",
+    "FIQ",
+    "VIQ",
+    "PIQ",
+    "ADOS_TOTAL",
+    "ADOS_COMM",
+    "ADOS_SOCIAL",
+    "ADOS_STEREO_BEHAV",
+    "SRS_RAW_TOTAL",
+    "AQ_TOTAL"
+  ],
+  "classes": [
+    1,
+    2
+  ],
+  "class_meaning": {
+    "1": "autism (DX_GROUP=1)",
+    "2": "control (DX_GROUP=2)"
+  },
+  "sha256": {
+    "scaler.pkl": "67ec35ce88e73a0029c6fdc128bd342deca750fbdafe40074da2945e42bf601a",
+    "voting_classifier_model.pkl": "26a4ede80d357ec2febe250ec4592415d4ff5f4611f1cd4c1d0c631363a828f6"
+  }
+}
