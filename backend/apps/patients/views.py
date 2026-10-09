@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Count, Q
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
@@ -33,7 +33,9 @@ class PatientViewSet(
         # Data isolation: a doctor can only ever see their own patients. Because the
         # *queryset* is filtered, another doctor's patient yields 404 (not 403), so
         # the existence of the record is not leaked either.
-        qs = Patient.objects.filter(created_by=self.request.user).order_by("-created_at", "-id")
+        qs = Patient.objects.filter(created_by=self.request.user).annotate(
+            assessment_count=Count("assessments")
+        ).order_by("-created_at", "-id")  # explicit: annotate() drops Meta.ordering
         query = self.request.query_params.get("q", "").strip()
         if query:
             qs = qs.filter(Q(name__icontains=query) | Q(public_id__icontains=query))
