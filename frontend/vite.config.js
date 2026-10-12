@@ -1,19 +1,14 @@
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// In development the browser talks to Vite (port 5173) and Vite forwards /api to
-// Django (port 8000). Same-origin from the browser's point of view => no CORS
-// headaches, and the same relative URLs work behind nginx in Docker.
+// Dev: the browser talks to Vite (5173) and Vite forwards /api to Django (8000).
+// Production: VITE_API_URL points at the deployed API.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
     proxy: { '/api': process.env.VITE_PROXY_TARGET || 'http://localhost:8000' },
   },
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    setupFiles: './src/test/setup.js',
-    css: false,
-  },
+  test: { environment: 'jsdom', globals: true, setupFiles: './src/test/setup.js', css: false },
 })

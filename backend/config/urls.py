@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from .views import HealthView
@@ -11,6 +13,9 @@ api_v1 = [
 ]
 
 urlpatterns = [
+    # The API has no home page: send visitors to the docs instead of a 404.
+    path("", RedirectView.as_view(url="/api/docs/", permanent=False)),
+    path("favicon.ico", lambda request: HttpResponse(status=204)),  # browsers always ask for this
     path("admin/", admin.site.urls),
     path("api/v1/", include(api_v1)),
     # Patients router lives under the same prefix

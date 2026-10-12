@@ -1,20 +1,12 @@
 import { useState } from 'react'
 import { IQ_FIELDS, groupFields } from '../lib/assessment'
+import { btnLg, btnPrimary, card } from '../ui'
 import Field from './Field'
 import RangeHint from './RangeHint'
 
 /**
  * Builds its inputs from the backend schema for ONE age group, so the list of tests
  * is never duplicated in the frontend. Tests are grouped into readable sections.
- *
- * Props
- *   group        age-group object from GET /ml/schema/
- *   iqTypes      [{value,label}] instruments (WASI / WAIS / WISC / ...)
- *   defaultIq    preselected instrument
- *   onSubmit     (payload) => void
- *   submitting   disables the button while the request is in flight
- *   errors       { fieldName: "message" } from the server
- *   formError    non-field error text
  */
 export default function AssessmentForm({ group, iqTypes, defaultIq, onSubmit, submitting, errors = {}, formError }) {
   const [values, setValues] = useState({})
@@ -34,15 +26,16 @@ export default function AssessmentForm({ group, iqTypes, defaultIq, onSubmit, su
   }
 
   return (
-    <form className="assess" onSubmit={handleSubmit} aria-label={`Assessment for ${group.label}`}>
+    <form className="grid gap-4" onSubmit={handleSubmit} aria-label={`Assessment for ${group.label}`}>
       {sections.map((section) => (
-        <fieldset key={section.id} className="card section">
-          <legend className="section__title">{section.title}</legend>
-          <p className="section__hint">{section.hint}</p>
+        <fieldset key={section.id} className={`${card} min-w-0 p-5 sm:p-6`}>
+          <legend className="float-left w-full font-display text-xl font-semibold">{section.title}</legend>
+          <p className="clear-both mb-4 text-sm text-muted">{section.hint}</p>
 
           {section.id === 'cognitive' && hasIq && (
             <Field
               as="select"
+              className="mb-4"
               label="IQ instrument used"
               hint="WISC is typically used for children, WAIS for adults, WASI is the abbreviated scale."
               value={iqTest}
@@ -50,14 +43,12 @@ export default function AssessmentForm({ group, iqTypes, defaultIq, onSubmit, su
               error={errors.iq_test_type}
             >
               {iqTypes.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
+                <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </Field>
           )}
 
-          <div className="form__grid">
+          <div className="grid gap-x-5 gap-y-5 sm:grid-cols-2 2xl:grid-cols-3">
             {section.fields.map((f) => (
               <Field
                 key={f.key}
@@ -79,25 +70,13 @@ export default function AssessmentForm({ group, iqTypes, defaultIq, onSubmit, su
         </fieldset>
       ))}
 
-      <div className="card section">
-        <Field
-          as="textarea"
-          label="Clinical notes (optional)"
-          rows={3}
-          maxLength={2000}
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          error={errors.notes}
-        />
+      <div className={`${card} p-5 sm:p-6`}>
+        <Field as="textarea" label="Clinical notes (optional)" rows={3} maxLength={2000} value={notes} onChange={(e) => setNotes(e.target.value)} error={errors.notes} />
       </div>
 
-      {formError && (
-        <p className="banner banner--error" role="alert">
-          {formError}
-        </p>
-      )}
-      <button className="btn btn--primary btn--large" type="submit" disabled={submitting}>
-        {submitting && <span className="spinner" aria-hidden="true" />}
+      {formError && <p role="alert" className="rounded-xl border border-rose/30 bg-rose/10 px-4 py-3 text-sm text-rose">{formError}</p>}
+      <button className={`${btnPrimary} ${btnLg}`} type="submit" disabled={submitting}>
+        {submitting && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-[2.5px] border-white/40 border-t-white" />}
         {submitting ? 'Running model…' : 'Run assessment'}
       </button>
     </form>

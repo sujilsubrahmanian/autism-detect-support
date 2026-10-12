@@ -5,7 +5,7 @@ export default function Avatar({ name, size = 44 }) {
   const hue = avatarHue(name)
   return (
     <span
-      className="avatar"
+      className="inline-grid shrink-0 place-items-center rounded-full font-display font-semibold"
       aria-hidden="true"
       style={{
         width: size,

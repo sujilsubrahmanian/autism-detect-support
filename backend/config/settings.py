@@ -36,6 +36,10 @@ if not SECRET_KEY:
         raise ImproperlyConfigured("DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is off.")
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
+# Render tells the app its public hostname via this variable.
+_public_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if _public_host:
+    ALLOWED_HOSTS.append(_public_host)
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
 
 if env_bool("DJANGO_HTTPS", False):
